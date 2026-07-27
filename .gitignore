@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Data
+data/*.csv
+!data/*.md
+
+# Models
+models/*.pkl
+models/*.joblib
+
+# Notebook checkpoints
+notebooks/.ipynb_checkpoints/
+
+# Reports
+reports/*.png
+reports/*.html
+reports/*.pdf
+
+# Environment
+.env
+venv/
+.venv/
