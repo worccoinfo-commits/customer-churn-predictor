@@ -21,7 +21,7 @@ def load_model():
 
     model = joblib.load(model_path)
     scaler = joblib.load(scaler_path)
-    feature_names = pd.read_csv(features_path, header=None)[0].tolist()
+    feature_names = pd.read_csv(features_path, header=None).iloc[:, 0].tolist()
 
     return model, scaler, feature_names
 
@@ -33,7 +33,7 @@ def preprocess_single(customer: dict, feature_names: list) -> pd.DataFrame:
     df["TotalCharges"] = pd.to_numeric(df.get("TotalCharges", 0), errors="coerce")
     df["TotalCharges"] = df["TotalCharges"].fillna(df["TotalCharges"].median())
 
-    df["Gender"] = (df.get("gender", "Male").iloc[0] == "Male").astype(int)
+    df["Gender"] = 1 if customer.get("gender", "Male") == "Male" else 0
     df = df.drop("gender", axis=1, errors="ignore")
 
     for suffix in ["MultipleLines", "OnlineSecurity", "OnlineBackup",
@@ -77,9 +77,7 @@ def preprocess_single(customer: dict, feature_names: list) -> pd.DataFrame:
 
     numeric_cols = ["tenure", "MonthlyCharges", "TotalCharges"]
     scaler = joblib.load(MODELS_DIR / "scaler.joblib")
-    for col in numeric_cols:
-        if col in df.columns:
-            df[col] = scaler.transform(df[[col]])
+    df[numeric_cols] = scaler.transform(df[numeric_cols])
 
     for col in feature_names:
         if col not in df.columns:

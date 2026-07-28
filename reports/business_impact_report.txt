@@ -24,6 +24,11 @@ BUSINESS IMPACT:
   - ROI: 1469.9%
 
 TOP RISK FACTORS TO MONITOR:
+  - Contract Two year (importance: 1.411)
+  - tenure (importance: 1.147)
+  - InternetService No (importance: 1.114)
+  - InternetService Fiber optic (importance: 1.079)
+  - Contract One year (importance: 0.718)
 
 RECOMMENDATIONS:
   1. Implement early warning system for customers reaching 12-month tenure

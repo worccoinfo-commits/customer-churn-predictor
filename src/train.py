@@ -390,6 +390,12 @@ TOP RISK FACTORS TO MONITOR:
 """
     if hasattr(model, "feature_importances_"):
         importances = model.feature_importances_
+    elif hasattr(model, "coef_"):
+        importances = np.abs(model.coef_[0])
+    else:
+        importances = None
+
+    if importances is not None:
         indices = np.argsort(importances)[-5:]
         for idx in reversed(indices):
             report += f"  - {feature_names[idx].replace('_', ' ')} (importance: {importances[idx]:.3f})\n"
@@ -445,9 +451,8 @@ def main():
 
     scaler = StandardScaler()
     numeric_cols = ["tenure", "MonthlyCharges", "TotalCharges"]
-    for col in numeric_cols:
-        X_train[col] = scaler.fit_transform(X_train[[col]])
-        X_test[col] = scaler.transform(X_test[[col]])
+    X_train[numeric_cols] = scaler.fit_transform(X_train[numeric_cols])
+    X_test[numeric_cols] = scaler.transform(X_test[numeric_cols])
 
     results, best_model, best_name = train_models(X_train, X_test, y_train, y_test)
 
@@ -472,7 +477,7 @@ def main():
 
     joblib.dump(best_model, MODELS_DIR / "churn_model.joblib")
     joblib.dump(scaler, MODELS_DIR / "scaler.joblib")
-    X.columns.to_series().to_csv(MODELS_DIR / "feature_names.csv", index=False)
+    pd.Series(X.columns).to_csv(MODELS_DIR / "feature_names.csv", index=False, header=False)
     print(f"Best model saved to {MODELS_DIR / 'churn_model.joblib'}")
 
     report = generate_business_report(results, X.columns, best_model)
