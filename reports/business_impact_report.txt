@@ -1,0 +1,34 @@
+
+============================================================
+CUSTOMER CHURN PREDICTOR - BUSINESS IMPACT REPORT
+============================================================
+
+ASSUMPTIONS:
+  - Average monthly revenue per customer: $65
+  - Retention program cost per customer: $20
+  - 60% of predicted churners can be retained with intervention
+  - Total customer base: 7,043
+
+MODEL PERFORMANCE (Best: XGBoost):
+  - Accuracy: 76.37%
+  - Precision: 54.45%
+  - Recall: 67.11%
+  - ROC-AUC: 0.8237
+
+BUSINESS IMPACT:
+  - Customers identified as high-risk: 4,726
+  - Estimated preventable churns: 2,835
+  - Annual revenue saved: $2,211,300
+  - Retention program cost: $140,860
+  - Net annual impact: $2,070,440
+  - ROI: 1469.9%
+
+TOP RISK FACTORS TO MONITOR:
+
+RECOMMENDATIONS:
+  1. Implement early warning system for customers reaching 12-month tenure
+  2. Offer loyalty discounts for month-to-month contract customers
+  3. Bundle online security and tech support for higher retention
+  4. Target customers with high monthly charges (>$70) with retention offers
+  5. Improve onboarding for first 6 months - highest churn period
+============================================================

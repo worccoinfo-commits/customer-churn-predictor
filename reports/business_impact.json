@@ -1,0 +1,9 @@
+{
+  "churn_rate": 0.6711,
+  "precision": 0.5445,
+  "recall": 0.6711,
+  "roc_auc": 0.8237,
+  "preventable_churns": 2835,
+  "annual_savings": 2211300.0,
+  "roi_percent": 1469.8565952009087
+}

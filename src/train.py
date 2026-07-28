@@ -27,20 +27,35 @@ DATA_DIR.mkdir(exist_ok=True)
 MODELS_DIR.mkdir(exist_ok=True)
 REPORTS_DIR.mkdir(exist_ok=True)
 
-DATA_URL = "https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp/master/data/TELCO_CUSTOMER_CHURN_DATA.csv"
+DATA_URL = ""  # Uses kagglehub download
 DATA_PATH = DATA_DIR / "telco_churn.csv"
 RANDOM_STATE = 42
 
 
 def load_data():
-    if not DATA_PATH.exists():
-        print(f"Downloading dataset from IBM repository...")
-        df = pd.read_csv(DATA_URL)
-        df.to_csv(DATA_PATH, index=False)
-        print(f"Saved to {DATA_PATH}")
-    else:
+    if DATA_PATH.exists():
         df = pd.read_csv(DATA_PATH)
         print(f"Loaded from cached file: {DATA_PATH}")
+        return df
+
+    print(f"Downloading dataset from Kaggle...")
+    try:
+        import kagglehub
+        path = kagglehub.dataset_download("blastchar/telco-customer-churn")
+        import glob
+        csv_files = glob.glob(str(path) + "/*.csv")
+        if csv_files:
+            df = pd.read_csv(csv_files[0])
+            df.to_csv(DATA_PATH, index=False)
+            print(f"Saved to {DATA_PATH}")
+            return df
+    except Exception as e:
+        print(f"Kaggle download failed: {e}")
+        print("Falling back to direct URL...")
+
+    df = pd.read_csv(DATA_URL)
+    df.to_csv(DATA_PATH, index=False)
+    print(f"Saved to {DATA_PATH}")
     return df
 
 
@@ -96,12 +111,14 @@ def generate_plots(df):
         axes[0, 0].text(i, v + 30, f"{v}", ha="center", fontweight="bold")
 
     tenure_churn = df.groupby("Churn")["tenure"]
-    axes[0, 1].boxplot(
+    bp = axes[0, 1].boxplot(
         [tenure_churn.get_group("No"), tenure_churn.get_group("Yes")],
-        labels=["Stayed", "Churned"], patch_artist=True,
-        boxprops=dict(facecolor="#00e676", alpha=0.6),
-        medianprops=dict(color="black")
+        patch_artist=True, medianprops=dict(color="black")
     )
+    axes[0, 1].set_xticklabels(["Stayed", "Churned"])
+    for patch in bp["boxes"]:
+        patch.set_facecolor("#00e676")
+        patch.set_alpha(0.6)
     axes[0, 1].set_title("Tenure Distribution by Churn")
     axes[0, 1].set_ylabel("Months")
 
@@ -158,15 +175,10 @@ def preprocess_data(df):
     df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
     df["TotalCharges"] = df["TotalCharges"].fillna(df["TotalCharges"].median())
 
-    binary_cols = [
-        "Partner", "Dependents", "PhoneService", "PaperlessBilling",
-        "MultipleLines_Yes", "OnlineSecurity_Yes", "OnlineBackup_Yes",
-        "DeviceProtection_Yes", "TechSupport_Yes", "StreamingTV_Yes", "StreamingMovies_Yes"
-    ]
+    for col in ["Partner", "Dependents", "PhoneService", "PaperlessBilling"]:
+        df[col] = (df[col] == "Yes").astype(int)
 
-    cat_cols = [
-        "Gender", "InternetService", "Contract", "PaymentMethod"
-    ]
+    cat_cols = ["InternetService", "Contract", "PaymentMethod"]
 
     df["Gender"] = (df["gender"] == "Male").astype(int)
     df = df.drop("gender", axis=1)
@@ -177,9 +189,9 @@ def preprocess_data(df):
         df = df.drop(col, axis=1)
 
     df = pd.get_dummies(df, columns=cat_cols, drop_first=True)
-    df = df.astype(int)
     bool_cols = df.select_dtypes(include=["bool"]).columns
     df[bool_cols] = df[bool_cols].astype(int)
+    df = df.astype({c: "int64" for c in df.select_dtypes(include=["object"]).columns if c != "Churn"})
 
     print(f"Final feature count: {df.shape[1] - 1}")
     print(f"Features: {[c for c in df.columns if c != 'Churn']}")
